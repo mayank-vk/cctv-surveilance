@@ -3,10 +3,19 @@ from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras.layers import Dense, Dropout, GlobalAveragePooling2D
 from tensorflow.keras.models import Model
 from frame_dataset import get_data_generators
+from tensorflow.keras.callbacks import TensorBoard
+import datetime
+
+
 
 # Set paths
 DATA_DIR = r"C:/Users/mayan/Desktop/cctv-surveilance-project/data/processed_frames"
 train_gen, val_gen = get_data_generators(DATA_DIR)
+
+
+#create tensorboard
+log_dir="logs/fit/"+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+tensorboard_cb=TensorBoard(log_dir=log_dir,histogram_freq=1)
 
 # Load base model (exclude top layer)
 base_model = MobileNetV2(
@@ -42,7 +51,7 @@ history = model.fit(
     train_gen,
     validation_data=val_gen,
     epochs=20,
-    callbacks=[early_stop, lr_schedule]
+    callbacks=[early_stop, lr_schedule,tensorboard_cb]
 )
 
 # Save model
