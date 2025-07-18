@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Saved Clips</title>
+</head>
+<body>
+    <h1>🎞️ Saved Violence Clips</h1>
+    {% if clips %}
+        <ul>
+        {% for clip in clips %}
+            <li>
+                {{ clip }} –
+                <a href="{{ url_for('download_clip', filename=clip) }}">Download</a>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No clips found.</p>
+    {% endif %}
+    <a href="/">⬅ Back to Live View</a>
+</body>
+</html>

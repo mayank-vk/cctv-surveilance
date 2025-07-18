@@ -1,12 +1,21 @@
-import os
-import datetime
+import threading
+import time
 
-def send_alert(clip_path: str, timestamp: str):
-    print("\n[ALERT] ⚠️ Violence detected!")
-    print(f"[TIME]  📅 {timestamp}")
-    print(f"[CLIP]  🎥 Saved at: {clip_path}\n")
+latest_alert = {
+    "message": None,
+    "timestamp": None
+}
 
-    # log alerts to a file
-    log_path = "alert_log.txt"
-    with open(log_path, "a") as log_file:
-        log_file.write(f"{timestamp} - Violence detected - Clip: {clip_path}\n")
+def reset_alert_after_delay(delay=10):
+    def _reset():
+        time.sleep(delay)
+        latest_alert["message"] = None
+        latest_alert["timestamp"] = None
+    threading.Thread(target=_reset, daemon=True).start()
+
+def send_alert(clip_path, timestamp):
+    global latest_alert
+    latest_alert["message"] = f"Violence detected at {timestamp}"
+    latest_alert["timestamp"] = timestamp
+    print("[⚠] ALERT SENT:", latest_alert["message"])
+    reset_alert_after_delay(delay=10)  # Reset after 10 sec

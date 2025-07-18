@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Violence Detection CCTV</title>
+</head>
+<body>
+    <h1>🔴 Live CCTV Feed</h1>
+    <h2 id="alert-box">✅ No Alert</h2>
+    <img src="{{ url_for('video') }}" width="720">
+</body>
+<script>
+function checkAlert() {
+    fetch('/latest_alert')
+        .then(response => response.json())
+        .then(data => {
+            const alertBox = document.getElementById("alert-box");
+            if (data.message) {
+                alertBox.innerText = data.message + " at " + data.timestamp;
+                alertBox.style.color = "red";
+            } else {
+                alertBox.innerText = "✅ No Alert";
+                alertBox.style.color = "green";
+            }
+        });
+}
+setInterval(checkAlert, 2000); // check every 2 seconds
+</script>
+
+</html>
