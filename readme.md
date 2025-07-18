@@ -121,7 +121,7 @@ Model will be saved to: `model/violence_detection_model.h5`
 
 ## 📷 Sample Screenshot
 
-![UI Screenshot](path/to/screenshot.png) <!-- Add one if you want -->
+![UI Screenshot]("C:\Users\mayan\Pictures\Screenshots\Screenshot 2025-07-19 002155.png") <!-- Add one if you want -->
 
 ---
 
