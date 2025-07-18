@@ -40,21 +40,15 @@ def generate_frames():
         if not success:
             break
 
-        # Predict and update buffer
-        pred = predict_frame(frame)
-        is_violence = 1 if pred > 0.5 else 0
-        prediction_buffer.append(is_violence)
+        pred = predict_frame(frame)  # Confidence score (e.g., 0.87)
+        prediction_buffer.append(pred)
 
-        # Wait until buffer fills
-        if len(prediction_buffer) < prediction_buffer.maxlen:
-            label = "Normal"
-            violence_count = prediction_buffer.count(1)
-        else:
-            violence_count = prediction_buffer.count(1)
-            label = "Violence" if violence_count >= 10 else "Normal"
+        avg_pred = sum(prediction_buffer) / len(prediction_buffer)
+        label = "Violence" if avg_pred > 0.7 else "Normal"
 
-        # Save clip logic with cooldown
         now = time.time()
+
+        # Start saving only if cooldown is over and prediction is violent
         if label == "Violence" and not saving and (now - last_alert_time) > alert_cooldown_seconds:
             saving = True
             timestamp = time.strftime("%Y%m%d-%H%M%S")
@@ -65,6 +59,7 @@ def generate_frames():
             latest_alert["message"] = "⚠️ Violence Detected!"
             latest_alert["timestamp"] = timestamp
 
+        # Stop saving after required frames
         if saving:
             video_writer.write(frame)
             frames_saved += 1
@@ -72,17 +67,22 @@ def generate_frames():
                 saving = False
                 video_writer.release()
                 send_alert(clip_path=clip_path, timestamp=timestamp)
-                prediction_buffer.clear()  # Reset buffer after alert
 
-        # Show label and overlay
+        # Auto-clear alert after 10 seconds of normal frames
+        if label == "Normal" and latest_alert["message"] != "No alert":
+            if now - last_alert_time > 10:
+                latest_alert["message"] = "No alert"
+                latest_alert["timestamp"] = ""
+
+        # Draw prediction label on frame
         color = (0, 0, 255) if label == "Violence" else (0, 255, 0)
-        cv2.putText(frame, f"{label} ({violence_count}/15)", (10, 30),
+        cv2.putText(frame, f"{label} ({avg_pred:.2f})", (10, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
 
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+        yield (b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
 
 
 
